@@ -1,0 +1,11 @@
+[Unit]
+Description=adsy autodocs
+After=network.target
+
+[Service]
+User=doc-sync
+Type=simple
+ExecStart=gitlab-autodocs /etc/gitlab-autodocs.yaml
+
+[Install]
+WantedBy=multi-user.target
