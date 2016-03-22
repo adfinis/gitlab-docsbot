@@ -12,6 +12,8 @@ import threading
 import yaml
 import json
 
+import pprint
+
 import os
 import sys
 import zipfile
@@ -87,6 +89,15 @@ class GitlabArtifactsDownloader:
         except:
             pass
 
+    def download_raw_file(self, path):
+        git_urlsave = self.git._url
+        # set gitlab url to main for downloading artifact
+        self.git._url = "{0}/".format(self.gitlab_url)
+        dl = self.git._raw_get(path)
+        # restore original api error
+        self.git._url = git_urlsave
+        return dl
+
 
 
 def process_request(data):
@@ -96,47 +107,43 @@ def process_request(data):
 
     global conf
     logger.info("Process build trigger")
-    trigger_repo = data['project_name'].replace(" / ", "/")
-    do_download = False
-    extract_to = False
 
-    # loop over every repo in config and see if it matches
-    for repo in conf['repos']:
-        if repo['name'] == trigger_repo:
-            extract_to = repo['extract_to']
-        try:
-            if data['build_stage'] in repo['stages']:
-                do_download = True
-        except:
-            do_download = True
+    git = GitlabArtifactsDownloader(conf['gitlab']['url'], conf['gitlab']['token'])
 
-    # download artifacts if found in config
-    if do_download:
-        logger.info("Found in config, download and extract artifacts for project #{0}".format(data['project_id']))
-        dl_path = tempfile.mkdtemp()
-        artifacts_zip = "{0}/artifacts.zip".format(dl_path)
+    repo = "/".join(data['repository']['homepage'].split("/")[3:])
+    config_file = "/{0}/raw/{1}/.docs-bot.yml".format( repo, data['ref'] )
 
-        # wait some time until artifacts are uploaded
-        time.sleep(25)
+    try:
+        repo_conf_dl = git.download_raw_file(config_file)
+        rc = yaml.load(repo_conf_dl.text)
+        repo_conf = rc['docs']
+    except:
+        logger.error("config for repo not found")
+        return
 
-        # download artifacts
-        ci = GitlabArtifactsDownloader(conf['gitlab']['url'], conf['gitlab']['token'])
-        ci.select_project(data['project_id'])
-        ci.download_last_artifacts(artifacts_zip)
-        ci.unzip(artifacts_zip, dl_path)
+    if 'stages' in repo_conf:
+        if data['build_stage'] not in repo_conf['stages']:
+            logger.info('do not fetch, stage does not match')
+            return
 
-        # remove artifacts zip
-        os.remove(artifacts_zip)
+    if 'download_delay' in repo_conf:
+        logger.info("Config has delay in it, sleep for {0} secs".format(repo_conf['download_delay']))
+        time.sleep(repo_conf['download_delay'])
 
-        # copy artifacts to configured dir
-        copy_tree(dl_path, extract_to)
-
-        # remove temporary dir
-        shutil.rmtree(dl_path)
-
-        logger.info("Download artifacts of project #{0} done".format(data['project_id']))
-
-
+    # now we are ready to fetch
+    dl_path = tempfile.mkdtemp()
+    artifacts_zip = "{0}/artifacts.zip".format( dl_path )
+    git.select_project(data['project_id'])
+    git.download_last_artifacts( artifacts_zip )
+    git.unzip( artifacts_zip, dl_path )
+    # remove artifacts zip
+    os.remove(artifacts_zip)
+    # copy artifacts to configured dir
+    copy_tree(dl_path, repo_conf['extract_to'])
+    # remove temporary dir
+    shutil.rmtree(dl_path)
+    logger.info("Download artifacts of project #{0} done".format(data['project_id']))
+    return
 
 
 class RequestHandler(BaseHTTPRequestHandler):

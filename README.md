@@ -20,19 +20,19 @@ Then edit `/etc/gitlab-autodocs.yaml` and set your GitLab-URL, and the API-Key.
 
 ### Add new repos to sync
 
-You need to create an entry for every repo you want to snyc in `/etc/gitlab-autodocs.yaml`, for example:
+You need to create an `.docs-bot.yml` in your repository, example
 
 ```
-  - name: Cyrill/autodocs-ci-test
-    extract_to: /var/www/docs/autodocs-ci-test
-    stages:
-      - docs
+docs:
+  extract_to: /var/www/docs/autodocs-ci-test
+  download_delay: 10
+  stages:
+    - docs
 ```
-
-- `name` defines the GitLab repo in format `group/repo`
+`docs` needs to be the root entry of `y.docs-bot.yml`
 - `extract_to` directory to put artifacts
+- `download_delay` since gitlab triggers before uploading artifacts, you can configure an delay before fetching here
 - `stages` if defined, only snyc specified build stages configured in `.gitlab-ci.yml`
 
-After adding an new entry, you need to run `systemctl restart gitlab-autodocs`
 
 In GitLab, you need to grant `docs-bot` access to your repo and add an new Webhook which triggers on build-events, pointing to your docsync url.
