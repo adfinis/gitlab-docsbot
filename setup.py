@@ -48,6 +48,10 @@ setup(
     package_data=find_data(
         find_packages(), ["py"]
     ),
+    data_files = [
+        ('/etc', ['autodocs/config/gitlab-autodocs.yaml']),
+        ('/lib/systemd/system', ['autodocs/config/gitlab-autodocs.service'])
+    ],
     entry_points = {
         'console_scripts': [
             'gitlab-autodocs = autodocs:main',
