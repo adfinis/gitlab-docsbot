@@ -62,12 +62,13 @@ class GitlabArtifactsDownloader:
             # fetch last build from api
             builds = self.project.builds.list()
             last_build = builds[0]
+            artifacts_dl_url = "{0}/builds/{1}/artifacts/download".format(self.project.path_with_namespace, last_build.id)
             # save git api url
             git_urlsave = self.git._url
             # set gitlab url to main for downloading artifact
             self.git._url = "{0}/".format(self.gitlab_url)
             # download artifact
-            dl = self.git._raw_get(last_build.download_url)
+            dl = self.git._raw_get(artifacts_dl_url)
             # restore original api error
             self.git._url = git_urlsave
             self.save_download(dl, local_filename)
@@ -108,6 +109,8 @@ def process_request(data):
     global conf
     logger.info("Process build trigger")
 
+    #pprint.pprint(data)
+
     git = GitlabArtifactsDownloader(conf['gitlab']['url'], conf['gitlab']['token'])
 
     repo = "/".join(data['repository']['homepage'].split("/")[3:])
@@ -120,6 +123,22 @@ def process_request(data):
     except:
         logger.error("config for repo not found")
         return
+
+    try:
+        allowed_path = False
+        for candidate in conf['autodocs']['allowed_paths']:
+            if repo_conf['extract_to'].startswith(candidate):
+                allowed_path = True
+    except:
+        logger.error("Error parsing .docs-bot.yml")
+        return
+
+    if not allowed_path:
+        logger.error("Extract path not allowed")
+        return
+
+    if not os.path.exists(repo_conf['extract_to']):
+        os.mkdir(repo_conf['extract_to'])
 
     if 'stages' in repo_conf:
         if data['build_stage'] not in repo_conf['stages']:
@@ -174,6 +193,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             pass
 
         self.send_headers()
+
+    def log_message(self, format, *args):
+        logstr = (" ".join(map(str, args)) )
+        logger.info("REQUEST: {0}".format(logstr))
 
 
 def main():
