@@ -43,7 +43,7 @@ def find_data(packages, extensions):
 
 setup(
     name = "gitlab-autodocs",
-    version = "0.0.1",
+    version = "0.0.1.2",
     packages = find_packages(),
     package_data=find_data(
         find_packages(), ["py"]
