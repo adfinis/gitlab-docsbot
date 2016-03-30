@@ -158,7 +158,7 @@ def process_request(data):
     # remove artifacts zip
     os.remove(artifacts_zip)
     # copy artifacts to configured dir
-    copy_tree(dl_path, repo_conf['extract_to'])
+    copy_tree(dl_path, repo_conf['extract_to'], update=1)
     # remove temporary dir
     shutil.rmtree(dl_path)
     logger.info("Download artifacts of project #{0} done".format(data['project_id']))
