@@ -1,4 +1,3 @@
----
 autodocs:
   port: 8083
   allowed_paths:
