@@ -9,8 +9,8 @@ webhooks and downloads artifacts from the latest build to a defined directory.
 # apt-get install python-setuptools python-pip python-yaml
 # python setup.py install
 # systemctl daemon-reload
-# systemctl enable gitlab-autodocs
-# systemctl start gitlab-autodocs
+# systemctl enable gitlab-autodocs.service
+# systemctl start gitlab-autodocs.service
 ```
 
 ## Configuration
