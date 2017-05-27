@@ -1,5 +1,8 @@
 # GitLab CI Docs Bot
 
+[![Travis](https://img.shields.io/travis/adfinis-sygroup/gitlab-docsbot.svg?style=flat-square)](https://travis-ci.org/adfinis-sygroup/gitlab-docsbot)
+[![License](https://img.shields.io/github/license/adfinis-sygroup/gitlab-docsbot.svg?style=flat-square)](LICENSE)
+
 This script starts a simple web server which accepts requests from GitLab
 webhooks and downloads artifacts from the latest build to a defined directory.
 
@@ -41,3 +44,12 @@ docs:
 
 In GitLab, you need to grant `docs-bot` access to your repo and add a new
 webhook which triggers on build events, pointing to your docsync URL.
+
+## Contributions
+Contributions are more than welcome! Please feel free to open new issues or
+pull requests.
+
+## License
+GNU GENERAL PUBLIC LICENSE Version 3
+
+See the [LICENSE](LICENSE) file.
