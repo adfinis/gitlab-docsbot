@@ -1,26 +1,28 @@
-# GitLab CI automated docs sync
+# GitLab CI Docs Bot
 
-This script starts an simple server which accepts requests from GitLab Webhooks,
-and downloads artifacts from lastest build to an configured directory.
+This script starts a simple web server which accepts requests from GitLab
+webhooks and downloads artifacts from the latest build to a defined directory.
 
 ## Installation
 
 ```
-apt-get install python-setuptools python-pip python-yaml
-python setup.py install
-systemctl daemon-reload
-systemctl enable gitlab-autodocs.service
+# apt-get install python-setuptools python-pip python-yaml
+# python setup.py install
+# systemctl daemon-reload
+# systemctl enable gitlab-autodocs
+# systemctl start gitlab-autodocs
 ```
 
 ## Configuration
 
 ### Initial
-Add an new user in GitLab called `docs-bot` and get his API-Key.
-Then edit `/etc/gitlab-autodocs.yaml` and set your GitLab-URL, and the API-Key.
+
+Add a new user in GitLab called `docs-bot` and get his API-Key. Then edit 
+`/etc/gitlab-autodocs.yaml` and set your GitLab URL and the API key.
 
 ### Add new repos to sync
 
-You need to create an `.docs-bot.yml` in your repository, example
+You need to create a `.docs-bot.yml` in your repository, example:
 
 ```
 docs:
@@ -29,10 +31,13 @@ docs:
   stages:
     - docs
 ```
-`docs` needs to be the root entry of `y.docs-bot.yml`
+
+`docs` needs to be the root entry of `.docs-bot.yml`
 - `extract_to` directory to put artifacts
-- `download_delay` since gitlab triggers before uploading artifacts, you can configure an delay before fetching here
-- `stages` if defined, only snyc specified build stages configured in `.gitlab-ci.yml`
+- `download_delay` since GitLab triggers before uploading artifacts, you can
+   configure a delay before fetching them
+- `stages` if defined, only sync specified build stages configured in 
+  `.gitlab-ci.yml`
 
-
-In GitLab, you need to grant `docs-bot` access to your repo and add an new Webhook which triggers on build-events, pointing to your docsync url.
+In GitLab, you need to grant `docs-bot` access to your repo and add a new
+webhook which triggers on build events, pointing to your docsync URL.

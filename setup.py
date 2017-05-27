@@ -4,15 +4,22 @@
 
 from setuptools import setup
 from setuptools import find_packages
-from setuptools.command.install import install
-import sys
+import codecs
 import os
+import sys
 
 version = sys.version_info[0]
 if version > 2:
     pass
 else:
     pass
+
+
+__version__  = None
+version_file = "autodocs/version.py"
+with codecs.open(version_file, encoding="UTF-8") as f:
+    code = compile(f.read(), version_file, 'exec')
+    exec(code)
 
 
 def find_data(packages, extensions):
@@ -38,12 +45,14 @@ def find_data(packages, extensions):
                         data[package].append(file_path)
     return data
 
-#with open('README.rst', 'r') as f:
-#    README_TEXT = f.read()
+
+with codecs.open('README.md', 'r', encoding="UTF-8") as f:
+    README_TEXT = f.read()
+
 
 setup(
     name = "gitlab-autodocs",
-    version = "0.0.1.2",
+    version = __version__,
     packages = find_packages(),
     package_data=find_data(
         find_packages(), ["py"]
@@ -62,21 +71,21 @@ setup(
         "pyyaml",
         "python-gitlab"
     ],
-    author = "Adfinis-SyGroup AG",
+    author = "Adfinis SyGroup AG",
     author_email = "https://adfinis-sygroup.ch/",
-    description = "Gitlab automated doc sync from CI",
-    long_description = "tbd",
-    keywords = "GitLab CI autodocs",
-    url = "https://adfinis-sygroup.ch/",
+    description = "GitLab CI Docs Bot",
+    long_description = README_TEXT,
+    keywords = "GitLab CI autodocs bot",
+    url = "https://github.com/karras/gitlab-docsbot",
     classifiers = [
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
         "Intended Audience :: Developers",
         "Intended Audience :: Information Technology",
-        "License :: OSI Approved :: "
-        "GNU Affero General Public License v3",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Natural Language :: English",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 2.6",
+        "Topic :: Software Development :: Build Tools"
     ]
 )
