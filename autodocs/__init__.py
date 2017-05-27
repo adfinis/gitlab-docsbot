@@ -12,8 +12,6 @@ import threading
 import yaml
 import json
 
-import pprint
-
 import os
 import sys
 import zipfile
@@ -21,12 +19,13 @@ import tempfile
 import shutil
 from distutils.dir_util import copy_tree
 
-from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
 
 # init logging
 logger = logging.getLogger('adsy-autodocs')
-log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - '
+                                  '%(message)s')
 ch = logging.StreamHandler()
 ch.setFormatter(log_formatter)
 logger.setLevel(20)
@@ -43,11 +42,11 @@ class GitlabArtifactsDownloader:
         requests.packages.urllib3.disable_warnings()
         self.gitlab_url = gitlab_url
         self.project = False
-        self.git = gitlab.Gitlab( gitlab_url, gitlab_token, ssl_verify=False )
+        self.git = gitlab.Gitlab(gitlab_url, gitlab_token, ssl_verify=False)
 
     def select_project_search(self, project_name):
         project = self.git.projects.search(project_name)
-        if len(project)<1:
+        if len(project) < 1:
             self.project = False
             return False
         else:
@@ -62,7 +61,8 @@ class GitlabArtifactsDownloader:
             # fetch last build from api
             builds = self.project.builds.list()
             last_build = builds[0]
-            artifacts_dl_url = "{0}/builds/{1}/artifacts/download".format(self.project.path_with_namespace, last_build.id)
+            artifacts_dl_url = "{0}/builds/{1}/artifacts/download".format(
+                self.project.path_with_namespace, last_build.id)
             # save git api url
             git_urlsave = self.git._url
             # set gitlab url to main for downloading artifact
@@ -100,7 +100,6 @@ class GitlabArtifactsDownloader:
         return dl
 
 
-
 def process_request(data):
     """
     Function to process an request from GitLab
@@ -109,12 +108,13 @@ def process_request(data):
     global conf
     logger.info("Process build trigger")
 
-    #pprint.pprint(data)
+    # pprint.pprint(data)
 
-    git = GitlabArtifactsDownloader(conf['gitlab']['url'], conf['gitlab']['token'])
+    git = GitlabArtifactsDownloader(conf['gitlab']['url'],
+                                    conf['gitlab']['token'])
 
     repo = "/".join(data['repository']['homepage'].split("/")[3:])
-    config_file = "/{0}/raw/{1}/.docs-bot.yml".format( repo, data['ref'] )
+    config_file = "/{0}/raw/{1}/.docs-bot.yml".format(repo, data['ref'])
 
     try:
         repo_conf_dl = git.download_raw_file(config_file)
@@ -146,22 +146,24 @@ def process_request(data):
             return
 
     if 'download_delay' in repo_conf:
-        logger.info("Config has delay in it, sleep for {0} secs".format(repo_conf['download_delay']))
+        logger.info("Config has delay in it, sleep for {0} secs".format(
+            repo_conf['download_delay']))
         time.sleep(repo_conf['download_delay'])
 
     # now we are ready to fetch
     dl_path = tempfile.mkdtemp()
-    artifacts_zip = "{0}/artifacts.zip".format( dl_path )
+    artifacts_zip = "{0}/artifacts.zip".format(dl_path)
     git.select_project(data['project_id'])
-    git.download_last_artifacts( artifacts_zip )
-    git.unzip( artifacts_zip, dl_path )
+    git.download_last_artifacts(artifacts_zip)
+    git.unzip(artifacts_zip, dl_path)
     # remove artifacts zip
     os.remove(artifacts_zip)
     # copy artifacts to configured dir
     copy_tree(dl_path, repo_conf['extract_to'], update=1)
     # remove temporary dir
     shutil.rmtree(dl_path)
-    logger.info("Download artifacts of project #{0} done".format(data['project_id']))
+    logger.info("Download artifacts of project #{0} done".format(
+        data['project_id']))
     return
 
 
@@ -172,10 +174,9 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def send_headers(self):
         self.send_response(200)
-        self.send_header('Content-type','text/html')
+        self.send_header('Content-type', 'text/html')
         self.end_headers()
         self.wfile.write("")
-
 
     def do_GET(self):
         self.send_headers()
@@ -186,8 +187,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         data_string = self.rfile.read(int(self.headers['Content-Length']))
         data = json.loads(data_string)
         try:
-            if (data['object_kind'] == "build" and data['build_status']=='success'):
-                thread = threading.Thread( target=process_request, args=[data] )
+            if (data['object_kind'] == "build" and
+                    data['build_status'] == 'success'):
+                thread = threading.Thread(target=process_request, args=[data])
                 thread.start()
         except:
             pass
@@ -195,7 +197,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_headers()
 
     def log_message(self, format, *args):
-        logstr = (" ".join(map(str, args)) )
+        logstr = (" ".join(map(str, args)))
         logger.info("REQUEST: {0}".format(logstr))
 
 
@@ -206,12 +208,12 @@ def main():
         conf = yaml.load(f)
     try:
         # start an http server
-        server = HTTPServer(('', conf['autodocs']['port']), RequestHandler )
-        logger.info("Started server on port {0}".format(conf['autodocs']['port']))
+        server = HTTPServer(('', conf['autodocs']['port']), RequestHandler)
+        logger.info("Started server on port {0}".format(
+            conf['autodocs']['port']))
         server.serve_forever()
     except KeyboardInterrupt:
         server.socket.close()
-
 
 
 if __name__ == "__main__":
