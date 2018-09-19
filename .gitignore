@@ -27,5 +27,4 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
-.flake8
 .deps/
