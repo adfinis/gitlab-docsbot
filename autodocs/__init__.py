@@ -108,7 +108,7 @@ class GitlabArtifactsDownloader:
 
     def download_raw_file(self, path):
         req_url     = "{0}/{1}".format(self.gitlab_url, path)
-        req_headers = { "Private-Token": self.gitlab_token }
+        req_headers = {"Private-Token": self.gitlab_token}
         dl          = requests.get(req_url, headers=req_headers)
         return dl
 
