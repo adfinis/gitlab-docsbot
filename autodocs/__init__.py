@@ -107,11 +107,11 @@ class GitlabArtifactsDownloader:
             pass
 
     def download_raw_file(self, path, project_id, ref="master"):
-        req_url     = "{0}/api/v4/projects/{1}/repository/files/{2}/raw?ref={3}".format(
-          self.gitlab_url,
-          project_id,
-          path,
-          ref
+        req_url = "{0}/api/v4/projects/{1}/repository/files/{2}/raw?ref={3}".format(
+            self.gitlab_url,
+            project_id,
+            path,
+            ref
         )
         req_headers = {"Private-Token": self.gitlab_token}
         dl          = requests.get(req_url, headers=req_headers)
@@ -131,7 +131,7 @@ def process_request(data):
     git = GitlabArtifactsDownloader(conf['gitlab']['url'],
                                     conf['gitlab']['token'])
 
-    repo = "/".join(data['repository']['homepage'].split("/")[3:])
+    # repo = "/".join(data['repository']['homepage'].split("/")[3:])
 
     try:
         repo_conf_dl   = git.download_raw_file(
@@ -139,7 +139,6 @@ def process_request(data):
             data['project_id'],
             data['ref']
         )
-        repo_conf_dl = git.download_raw_file(config_file)
         rc = yaml.load(repo_conf_dl.text)
         repo_conf = rc['docs']
     except:
