@@ -22,6 +22,7 @@ ignore =
     P103,
     E722,
     # line break after binary operator
-    W504
+    W504,
+    E501
 
 jobs=auto
